@@ -229,7 +229,7 @@ class SignalGeneration:
 
 
 if __name__ == "__main__":
-    # Pick uhhhhh EES and VTWV
+    # Pick EES and VTWV
     # data = pd.read_csv(
     #     "data/monthly/prices_Mar_2022_.csv", index_col=0, parse_dates=True
     # )
