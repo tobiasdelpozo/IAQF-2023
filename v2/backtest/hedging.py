@@ -8,10 +8,6 @@ WINDOW_SIZE = 252
 MOD_REGRESSION = 3
 
 
-# This code is both from Brian's notebook for exponential weighted regressions
-# and also from Tobias Rodriguez del Pozo's notebook for predictive regressions.
-
-
 def hl_to_lambda(hl):
     # Convert half-life to lambda.
     return 2 ** (-1.0 / hl)
