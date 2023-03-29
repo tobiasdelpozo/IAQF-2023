@@ -102,7 +102,7 @@ def beta_calc(asset_1, asset_2, mkt, mod=3):
         return beta
 
 
-def calc_rolling_betas(asset_1, asset_2, mkt, mod, WINDOW_SIZE=10)):
+def calc_rolling_betas(asset_1, asset_2, mkt, mod, WINDOW_SIZE=10):
     # These betas SHOULD be lagged already
     betas = pd.DataFrame(index=asset_1.iloc[WINDOW_SIZE:].index, columns=["Betas"])
     start = 0
