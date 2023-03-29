@@ -198,7 +198,7 @@ def simulate_pair(data, K, trading_cost=0, delay_time=1):
                     continue
         update_port_value()
 
-def backtest(sample_data, contract_size=100, TRANSACTION_COST=0.0):
+def backtest(sample_data, initial_capital=100_000, TRANSACTION_COST=0.0):
     data = sample_data.copy()
 
     if "Transaction Cost" not in data.columns:
@@ -210,12 +210,13 @@ def backtest(sample_data, contract_size=100, TRANSACTION_COST=0.0):
     new_pos = False
     for i in data.index:
         cur_prices = [data.loc[i].iloc[0], data.loc[i].iloc[1]]
+        pos_size = [np.round(initial_capital/cur_prices[0]), np.round(initial_capital/cur_prices[1])]
         signal = data.loc[i, "Signal"]
         if signal > 0:
             if cur_pos[0] == 0 and cur_pos[1] == 0:
                 cur_pos = (
-                    signal * contract_size,
-                    -1 * contract_size * signal * sample_data.loc[i, "Betas"],
+                    signal * pos_size[0],
+                    -1 * pos_size[1] * signal * sample_data.loc[i, "Betas"],
                 )
                 data.loc[i, "Transaction Cost"] = (
                     -np.dot(np.abs(cur_pos), cur_prices) * TRANSACTION_COST
@@ -230,8 +231,8 @@ def backtest(sample_data, contract_size=100, TRANSACTION_COST=0.0):
         elif signal < 0:
             if cur_pos[0] == 0 and cur_pos[1] == 0:
                 cur_pos = (
-                    signal * contract_size,
-                    -signal * contract_size * sample_data.loc[i, "Betas"],
+                    signal * pos_size[0],
+                    -signal * pos_size[1] * sample_data.loc[i, "Betas"],
                 )
                 data.loc[i, "Transaction Cost"] = (
                     -np.dot(np.abs(cur_pos), cur_prices) * TRANSACTION_COST
