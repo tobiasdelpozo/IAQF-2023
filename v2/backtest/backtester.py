@@ -249,8 +249,11 @@ def backtest(sample_data, margins, contract_mult, risk_mult = 2.0, initial_capit
             prev_val = init_val
             new_pos = False
 
-        data.loc[i, "Daily PnL"] = np.dot(np.dot(contract_mult, cur_pos), cur_prices) - prev_val
-        prev_val = np.dot(np.dot(contract_mult, cur_pos), cur_prices)
+        cur_prices[0] = cur_prices[0] * contract_mult[0]
+        cur_prices[1] = cur_prices[1] * contract_mult[1]
+
+        data.loc[i, "Daily PnL"] = np.dot(cur_pos, cur_prices) - prev_val
+        prev_val = np.dot(cur_pos, cur_prices)
 
         if closed == True:
             cur_pos = (0, 0)
