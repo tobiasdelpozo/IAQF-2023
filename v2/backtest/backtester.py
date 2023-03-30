@@ -198,7 +198,7 @@ def simulate_pair(data, K, trading_cost=0, delay_time=1):
                     continue
         update_port_value()
 
-def backtest(sample_data, initial_capital=100_000, TRANSACTION_COST=0.0):
+def backtest(sample_data, margins, risk_mult = 2.0, initial_capital=100_000, TRANSACTION_COST=0.0):
     data = sample_data.copy()
 
     if "Transaction Cost" not in data.columns:
@@ -210,7 +210,7 @@ def backtest(sample_data, initial_capital=100_000, TRANSACTION_COST=0.0):
     new_pos = False
     for i in data.index:
         cur_prices = [data.loc[i].iloc[0], data.loc[i].iloc[1]]
-        pos_size = [np.round(initial_capital/cur_prices[0]), np.round(initial_capital/cur_prices[1])]
+        pos_size = [np.round(initial_capital/(risk_mult*margins[0])), np.round(initial_capital/(risk_mult*margins[1]))]
         signal = data.loc[i, "Signal"]
         if signal > 0:
             if cur_pos[0] == 0 and cur_pos[1] == 0:
