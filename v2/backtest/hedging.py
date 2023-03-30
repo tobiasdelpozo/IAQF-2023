@@ -43,7 +43,7 @@ def rolling_beta(data, hl, y_col, x_col):
     return pd.Series(list(_reg()), index=data.index[min_pts:])
 
 
-def beta_calc(asset_1, asset_2, mkt, mod=MOD_REGRESSION):
+def beta_calc(asset_1, asset_2, mkt=None, mod=MOD_REGRESSION):
     # Calculate each asset's beta to the market.
     # Various other hedge ratios are included.
     # Use RANSAC to remove outliers.
@@ -101,7 +101,7 @@ def beta_calc(asset_1, asset_2, mkt, mod=MOD_REGRESSION):
         m1 = RANSACRegressor(random_state=0, estimator=LinearRegression(fit_intercept=False))
         m1.fit(np.array(a2).reshape(-1, 1), np.array(a1).reshape(-1, 1))
         beta = m1.estimator_.coef_[0]
-        return beta
+        return beta[0]
 
 
 def calc_rolling_betas(asset_1, asset_2, mkt, mod):

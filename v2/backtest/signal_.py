@@ -15,8 +15,8 @@ sys.path.append("../copulas/")
 #     FrankCopula,
 #     CopulaDistribution,
 # )
-from copulas.distributions import KDEDist
-from copulas.fitting import CopulaPairs
+from v2.copulas.distributions import KDEDist
+from v2.copulas.fitting import CopulaPairs
 
 
 # from Notebooks.copulas.fitting import CopulaPairs
