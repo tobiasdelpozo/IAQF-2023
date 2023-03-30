@@ -198,7 +198,7 @@ def simulate_pair(data, K, trading_cost=0, delay_time=1):
                     continue
         update_port_value()
 
-def backtest(sample_data, margins, risk_mult = 2.0, initial_capital=100_000, TRANSACTION_COST=0.0):
+def backtest(sample_data, margins, contract_mult, risk_mult = 2.0, initial_capital=100_000, TRANSACTION_COST=0.0):
     data = sample_data.copy()
 
     if "Transaction Cost" not in data.columns:
@@ -249,8 +249,8 @@ def backtest(sample_data, margins, risk_mult = 2.0, initial_capital=100_000, TRA
             prev_val = init_val
             new_pos = False
 
-        data.loc[i, "Daily PnL"] = np.dot(cur_pos, cur_prices) - prev_val
-        prev_val = np.dot(cur_pos, cur_prices)
+        data.loc[i, "Daily PnL"] = np.dot(contract_mult[0]*cur_pos, contract_mult[1]*cur_prices) - prev_val
+        prev_val = np.dot(contract_mult[0]*cur_pos, contract_mult[1]*cur_prices)
 
         if closed == True:
             cur_pos = (0, 0)
