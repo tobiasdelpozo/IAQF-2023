@@ -42,7 +42,7 @@ def huber_beta(asset_1, asset_2, mkt):
     return hedge_ratio
 
 
-def beta_calc(asset_1, asset_2, mkt, mod=3):
+def beta_calc(asset_1, asset_2, mkt=None, mod=3):
     # Calculate each asset's beta to the market.
     # Use RANSAC to remove outliers.
 
@@ -102,18 +102,25 @@ def beta_calc(asset_1, asset_2, mkt, mod=3):
         return beta
 
 
-def calc_rolling_betas(asset_1, asset_2, mkt, mod, WINDOW_SIZE=10):
+def calc_rolling_betas(asset_1, asset_2, mkt=None, mod=3, WINDOW_SIZE=10):
     # These betas SHOULD be lagged already
     betas = pd.DataFrame(index=asset_1.iloc[WINDOW_SIZE:].index, columns=["Betas"])
     start = 0
     end = WINDOW_SIZE
     for i in betas.index:
-        beta = beta_calc(
+        if mkt is None:
+            beta = beta_calc(
+                asset_1.iloc[start : (start + WINDOW_SIZE)],
+                asset_2.iloc[start : (start + WINDOW_SIZE)],
+                mod=mod,
+            )
+        else:
+            beta = beta_calc(
             asset_1.iloc[start : (start + WINDOW_SIZE)],
             asset_2.iloc[start : (start + WINDOW_SIZE)],
             mkt.iloc[start : (start + WINDOW_SIZE)],
             mod=mod,
-        )
+            )
         betas.loc[i] = beta
         start = start + 1
     # Truncate beta to be 2 decimal places
