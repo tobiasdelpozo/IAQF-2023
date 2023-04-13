@@ -13,7 +13,7 @@ from itertools import repeat
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-from copulas.copulae import (
+from v2.copulas.copulae import (
     GaussianCopula,
     ClaytonCopula,
     GumbelCopula,
@@ -21,7 +21,7 @@ from copulas.copulae import (
     CopulaDistribution,
     MixedCopula,
 )
-from copulas.distributions import NormalDist, KDEDist
+from v2.copulas.distributions import NormalDist, KDEDist
 
 
 class CopulaPairs:
@@ -45,11 +45,16 @@ class CopulaPairs:
     
     def get_copulae(self):
         n = len(self.pairs)
-        with ProcessPoolExecutor(max_workers=n) as executor:
-            copula_fitter = [CopulaSelection(self.data, pair, self.copula_type, self.marginal_type, self.alpha) for pair in self.pairs]
-            copulae = [executor.submit(i.get_copula) for i in  copula_fitter]
-            for ind, copula in enumerate(as_completed(copulae)):
-                self.copulae[self.pairs[ind]] = copula.result()
+        if isinstance(self.copula_type, list) or self.copula_type == "mixed":
+            with ProcessPoolExecutor(max_workers=n) as executor:
+                copula_fitter = [CopulaSelection(self.data, pair, self.copula_type, self.marginal_type, self.alpha) for pair in self.pairs]
+                copulae = [executor.submit(i.get_copula) for i in  copula_fitter]
+                for ind, copula in enumerate(as_completed(copulae)):
+                    self.copulae[self.pairs[ind]] = copula.result()
+        else:
+            for pair in self.pairs:
+                copula_fitter = CopulaSelection(self.data, pair, self.copula_type, self.marginal_type)
+                self.copulae[pair] = copula_fitter.get_copula()
         return self.copulae
 
 
@@ -228,32 +233,32 @@ class CopulaSelection:
 
 
 # %%
-if __name__ == "__main__":
-    data = pd.read_csv(
-        "/Users/hun/Library/CloudStorage/OneDrive-SNU/1. University/UChicago/2022 4Q Winter/IAQF/IAQF_2023/Notebooks/data/raw_data.csv",
-        index_col=0,
-        parse_dates=True,
-    )
-    prices = data.pivot_table(values="adj_close", index="date", columns="ticker")
-    data_1 = prices[["VTWV", "EES"]].dropna()
-    data_2 = prices[["SPY", "IVV"]].dropna()
-    data_3 = prices[["SUB", "FLOT"]].dropna()
-    data_fin = (
-        pd.concat([data_1, data_2, data_3], axis=1)
-        .sort_index()
-        .pct_change()
-        .dropna(how="any")
-    )
-    data_fin.index = pd.to_datetime(data_fin.index)
-    tickers = [("VTWV", "EES"), ("SPY", "IVV"), ("SUB", "FLOT")]
-    # %%
-    sample = data_fin.loc["2015":"2017"]
-
-    # %%
-    c_res = CopulaPairs(sample, tickers)
-    pairs_copula = c_res.get_copulae()
-    pairs_copula[tickers[0]].cond_cdf(0.02, 0.05)
-
-    # %%
-    cop = CopulaSelection(sample, pairs=tickers[-1], copula_type="mixed")
-    cop.get_copula()
+# if __name__ == "__main__":
+#     data = pd.read_csv(
+#         "/Users/hun/Library/CloudStorage/OneDrive-SNU/1. University/UChicago/2022 4Q Winter/IAQF/IAQF_2023/Notebooks/data/raw_data.csv",
+#         index_col=0,
+#         parse_dates=True,
+#     )
+#     prices = data.pivot_table(values="adj_close", index="date", columns="ticker")
+#     data_1 = prices[["VTWV", "EES"]].dropna()
+#     data_2 = prices[["SPY", "IVV"]].dropna()
+#     data_3 = prices[["SUB", "FLOT"]].dropna()
+#     data_fin = (
+#         pd.concat([data_1, data_2, data_3], axis=1)
+#         .sort_index()
+#         .pct_change()
+#         .dropna(how="any")
+#     )
+#     data_fin.index = pd.to_datetime(data_fin.index)
+#     tickers = [("VTWV", "EES"), ("SPY", "IVV"), ("SUB", "FLOT")]
+#     # %%
+#     sample = data_fin.loc["2015":"2017"]
+#
+#     # %%
+#     c_res = CopulaPairs(sample, tickers)
+#     pairs_copula = c_res.get_copulae()
+#     pairs_copula[tickers[0]].cond_cdf(0.02, 0.05)
+#
+#     # %%
+#     cop = CopulaSelection(sample, pairs=tickers[-1], copula_type="mixed")
+#     cop.get_copula()

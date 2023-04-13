@@ -28,6 +28,7 @@ class SignalGeneration:
         prices,
         pairs,
         train_start,
+        train_end,
         oos_start,
         oos_end=None,
         n=100,
@@ -43,7 +44,11 @@ class SignalGeneration:
         self.n = n
         self.verbose = verbose
         self.data = self.input_data_calc().dropna(axis=0, how="any")
-        self.train_test_split(train_start, oos_start, oos_end)
+        self.train_start = train_start
+        self.train_end = train_end
+        self.oos_start = oos_start
+        self.oos_end = oos_end
+        self.train_test_split(train_start, train_end, oos_start, oos_end)
         self.copula_type = copula_type
         if copulae:
             self.copulae = copulae
@@ -52,11 +57,11 @@ class SignalGeneration:
             self.copulae = self.c_res.get_copulae()
         self.cdfs = self._fit_cdf()
 
-    def train_test_split(self, train_start, oos_start, oos_end=None):
+    def train_test_split(self, train_start, train_end, oos_start, oos_end=None):
         if isinstance(train_start, str) or isinstance(train_start, pd.Timestamp):
             if self.verbose:
                 print(self.data.loc[train_start:oos_start].isna().sum())
-            self.train_data = self.data.loc[train_start:oos_start].dropna(
+            self.train_data = self.data.loc[train_start:train_end].dropna(
                 axis=1, how="any"
             )
             if oos_end:
@@ -64,7 +69,7 @@ class SignalGeneration:
             else:
                 self.oos_data = self.data.loc[oos_start:]
         else:
-            self.train_data = self.data.iloc[train_start:oos_start].dropna(
+            self.train_data = self.data.iloc[train_start:train_end].dropna(
                 axis=1, how="any"
             )
             if oos_end:

@@ -4,7 +4,7 @@ import statsmodels.api as sm
 
 from sklearn.linear_model import RANSACRegressor, LinearRegression
 
-WINDOW_SIZE = 252
+#WINDOW_SIZE = 252
 MOD_REGRESSION = 3
 
 
@@ -104,7 +104,7 @@ def beta_calc(asset_1, asset_2, mkt=None, mod=MOD_REGRESSION):
         return beta[0]
 
 
-def calc_rolling_betas(asset_1, asset_2, mkt, mod):
+def calc_rolling_betas(asset_1, asset_2, mkt=None, mod=3, WINDOW_SIZE=252):
     # These betas SHOULD be lagged already
     betas = pd.DataFrame(index=asset_1.iloc[WINDOW_SIZE:].index, columns=["Betas"])
     start = 0
