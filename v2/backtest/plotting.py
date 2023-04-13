@@ -233,4 +233,33 @@ def plot_backtested(pair, trading_price, signals, beta, sig1, sig2, backtest_res
     
     plt.show()
     
+
+from .backtester import simulate_pair
+def plot_signals(pair, signal_object, trading_price, test_start, test_end):
+    sig1, sig2 = signal_object.calc_signals(single = False)
     
+    trading_price = trading_price.loc[test_start:test_end]
+    signals = signal_object.generate_signals(sig1 = sig1[pair], sig2 = sig2[pair])
+    signals = pd.DataFrame(data=signals['Signal'].values, index=trading_price.index, columns=['Signal'])
+
+    pair_leg_1 = pair[0]
+    pair_leg_2 = pair[1]
+    beta = 1
+
+    execution_delay = 1
+    prepped = pd.DataFrame(
+        data={
+            f'Leg 1 VWAP {execution_delay}': trading_price[pair_leg_1],
+            f'Leg 2 VWAP {execution_delay}': trading_price[pair_leg_2],
+            f'Volume 1': int(1e7),
+            f'Volume 2': int(1e7),
+            f'Leg 1 VWAP Volume {execution_delay}': int(1e7),
+            f'Leg 2 VWAP Volume {execution_delay}': int(1e7),
+            f'Signal {execution_delay}': signals['Signal'].shift(1).fillna(0),
+            'Betas': beta,
+            'FFR': 0.01
+        }
+    )
+    backtest_res = simulate_pair(prepped, K=50_000, delay_time=execution_delay)
+
+    plot_backtested(pair, trading_price, signals, beta, sig1, sig2, backtest_res, test_start, test_end)
