@@ -151,11 +151,11 @@ def plot_linear(formation_price, price, pair, start, trading_end, i):
     x_minutes = y.index
     x_plot = range(0, len(x_minutes))
     x_labels = x_minutes[~x_minutes.strftime("%d").duplicated()]
-    x_ticks = np.where(np.in1d(x_minutes, x_labels))[0]
+    xaxis = np.where(np.in1d(x_minutes, x_labels))[0]
 
     fig, ax = plt.subplots(figsize=(10,5))
     ax.plot(x_plot, y)
-    ax.set_xticks(x_ticks, x_labels.strftime("%d"), rotation=45)
+    ax.set_xticks(xaxis, x_labels.strftime("%d"), rotation=45)
 
     ax.grid(linestyle='--', alpha=0.8)
     ax.set(title=f'Pair {i+1} {pair[0]} - {beta:.2f} * {pair[1]}', ylabel='Price', xlabel='March 2022')
@@ -166,10 +166,10 @@ def plot_signal(sig1, sig2, trading_price, pair):
     x_minutes = trading_price.index
     x_plot = range(0, len(x_minutes))
     x_labels = x_minutes[~x_minutes.strftime("%d").duplicated()]
-    x_ticks = np.where(np.in1d(x_minutes, x_labels))[0]
+    xaxis = np.where(np.in1d(x_minutes, x_labels))[0]
     plt.plot(x_plot, sig1[pair] )
     plt.plot(x_plot, sig2[pair])
-    plt.xticks(x_ticks, x_labels.strftime("%d-%b-%y"), rotation=45)
+    plt.xticks(xaxis, x_labels.strftime("%d-%b-%y"), rotation=45)
     plt.axhline(0.95, color='r')
     plt.axhline(0.90, color='tomato')
     plt.axhline(0.85, color='salmon')
@@ -182,36 +182,35 @@ def plot_signal(sig1, sig2, trading_price, pair):
     plt.legend([f'P({pair[0]}<=x|{pair[1]}=y)', f'P({pair[1]}<=y|{pair[0]}=x)'])
     plt.show()
     
-def plot_backtested(pair, trading_price, signals, beta, sig1, sig2, backtest_res):
+def plot_backtested(pair, trading_price, signals, beta, sig1, sig2, backtest_res, 
+                    test_start, test_end):
     pair_leg_1 = pair[0]
     pair_leg_2 = pair[1]
 
     fig, (a, axes, ax) = plt.subplots(3,1,figsize=(16,9))
+    
+    training_price = trading_price.loc[test_start:test_end]
 
     buys = signals[signals['Signal'] > 0].index
     sells = signals[signals['Signal'] < 0].index
 
     spread = trading_price[pair_leg_1] - trading_price[pair_leg_2] * beta
+    xaxis = trading_price.index.to_series()
+    x_plot = xaxis
+    x_buys =  xaxis[xaxis.isin(buys)].index
+    x_sells = xaxis[xaxis.isin(sells)].index
 
-    x_minutes = spread.index
-    x_plot = range(0, len(x_minutes))
-    x_labels = x_minutes[~x_minutes.strftime("%d").duplicated()]
-    x_ticks = np.where(np.in1d(x_minutes, x_labels))[0]
-
-    xmins = pd.Series(x_minutes.values)
-    x_buys =  xmins[xmins.isin(buys)].index
-    x_sells = xmins[xmins.isin(sells)].index
 
     axes.plot(x_plot, spread, label='Spread')
     axes.plot(x_buys, spread.loc[buys], '^', markersize=6, color='g', label='Buy')
     axes.plot(x_sells, spread.loc[sells], 'v', markersize=6, color='r', label='Sell')
-    axes.set_xticks(x_ticks, x_labels.strftime("%d-%b-%y"), rotation=45)
+    # axes.set_xticks(xaxis, x_labels.strftime("%d-%b-%y"), rotation=45)
     axes.set_title(f'Pair Spread: {pair_leg_1}-{pair_leg_2}')
     axes.legend()
 
     a.plot(x_plot, sig1[pair])
     a.plot(x_plot, sig2[pair])
-    a.set_xticks(x_ticks, x_labels.strftime("%d-%b-%y"), rotation=45)
+    # a.set_xticks(xaxis, x_labels.strftime("%d-%b-%y"), rotation=45)
     a.axhline(0.95, color='r')
     a.axhline(0.90, color='tomato')
     a.axhline(0.85, color='salmon')
@@ -225,11 +224,13 @@ def plot_backtested(pair, trading_price, signals, beta, sig1, sig2, backtest_res
     a.legend([f'P({pair_leg_1}<=x|{pair_leg_2}=y)', f'P({pair_leg_2}<=y|{pair_leg_1}=x)'])
 
     ax.plot(x_plot, backtest_res['Portfolio'] - 50_000)
-    ax.set_xticks(x_ticks, x_labels.strftime("%d-%b-%y"), rotation=45)
+    # ax.set_xticks(xaxis, x_labels.strftime("%d-%b-%y"), rotation=45)
     ax.set_title(f'Cumulative PnL ($): {pair_leg_1}-{pair_leg_2}')
     ax.axhline(0, color='r', linestyle='--')
 
     fig.subplots_adjust(hspace=0.6)
+    fig.suptitle(f'Pair Trading Backtest: {pair_leg_1}-{pair_leg_2}, {test_start} - {test_start}', fontsize=16)
+    
     plt.show()
     
     
